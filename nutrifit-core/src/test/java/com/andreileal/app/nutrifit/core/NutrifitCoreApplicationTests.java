@@ -1,10 +1,10 @@
-package com.andreileal.app.nutrifit;
+package com.andreileal.app.nutrifit.core;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class NutrifitApplicationTests {
+class NutrifitCoreApplicationTests {
 
     @Test
     void contextLoads() {
