@@ -1,0 +1,8 @@
+package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities;
+
+public enum Feature {
+    CREATE_USER,
+    CREATE_TENANT,
+    EXPORT_PDF,
+    DASHBOARD
+}
