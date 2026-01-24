@@ -1,6 +1,7 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
-import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,16 +13,18 @@ import java.util.Collections;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final JpaUserRepository userRepositoryJpa;
 
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserDetailsServiceImpl(JpaUserRepository userRepositoryJpa) {
+        this.userRepositoryJpa = userRepositoryJpa;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userRepository.findUserByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
+        var userEntity = userRepositoryJpa.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usu\u00e1rio n\u00e3o encontrado: " + username));
+
+        var user = UserMapper.toDomain(userEntity);
 
         return new User(
                 user.getEmail(),

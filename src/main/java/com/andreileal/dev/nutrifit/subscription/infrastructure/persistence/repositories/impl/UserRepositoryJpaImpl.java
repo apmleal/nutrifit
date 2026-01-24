@@ -3,7 +3,7 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repo
 import com.andreileal.dev.nutrifit.subscription.domain.models.User;
 import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.UserRepositoryJpa;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -11,17 +11,15 @@ import java.util.Optional;
 @Repository
 public class UserRepositoryJpaImpl implements UserRepository {
 
-    private final UserMapper userMapper;
-    private final UserRepositoryJpa userRepositoryJpa;
+    private final JpaUserRepository userRepositoryJpa;
 
-    public UserRepositoryJpaImpl(UserMapper userMapper, UserRepositoryJpa userRepositoryJpa) {
-        this.userMapper = userMapper;
+    public UserRepositoryJpaImpl(JpaUserRepository userRepositoryJpa) {
         this.userRepositoryJpa = userRepositoryJpa;
     }
 
     @Override
     public Optional<User> findUserByEmail(String email) {
         return userRepositoryJpa.findByEmail(email)
-                .map(userMapper::toDomain);
+                .map(UserMapper::toDomain);
     }
 }

@@ -5,8 +5,6 @@ import com.andreileal.dev.nutrifit.subscription.infrastructure.auth.AuthEntryPoi
 import com.andreileal.dev.nutrifit.subscription.infrastructure.auth.AuthTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,21 +21,7 @@ public class SecurityConfig {
     public SecurityConfig(AuthEntryPointJwt unauthorizedHandler) {
         this.unauthorizedHandler = unauthorizedHandler;
     }
-
-    @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter(
-            TokenGenerator tokenGenerator,
-            UserDetailsService userDetailsService) {
-
-        return new AuthTokenFilter(tokenGenerator, userDetailsService);
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -45,7 +29,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   AuthTokenFilter authTokenFilter) throws Exception {
+                                                   TokenGenerator tokenGenerator,
+                                                   UserDetailsService userDetailsService) throws Exception {
+        AuthTokenFilter authTokenFilter = new AuthTokenFilter(tokenGenerator, userDetailsService);
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
