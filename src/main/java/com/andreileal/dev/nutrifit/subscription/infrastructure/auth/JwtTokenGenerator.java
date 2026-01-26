@@ -2,7 +2,7 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.AccessToken;
-import com.andreileal.dev.nutrifit.subscription.domain.services.TokenGenerator;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;

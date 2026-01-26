@@ -1,6 +1,8 @@
 package com.andreileal.dev.nutrifit.subscription.domain.models;
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
 
 import java.util.UUID;
 
@@ -32,5 +34,9 @@ public class User {
 
     public SenhaHasheada getSenhaHasheada() {
         return this.senhaHasheada;
+    }
+
+    public boolean isPassworValid(SenhaPlana senhaPlana, PasswordHasher passwordHasher) {
+        return passwordHasher.matches(senhaPlana, this.senhaHasheada);
     }
 }

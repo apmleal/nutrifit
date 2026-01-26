@@ -2,7 +2,7 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
-import com.andreileal.dev.nutrifit.subscription.domain.services.PasswordHasher;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 

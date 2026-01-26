@@ -1,6 +1,6 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
-import com.andreileal.dev.nutrifit.subscription.domain.services.TokenGenerator;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

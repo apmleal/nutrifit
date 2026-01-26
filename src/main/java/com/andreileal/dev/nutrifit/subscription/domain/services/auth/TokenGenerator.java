@@ -1,4 +1,4 @@
-package com.andreileal.dev.nutrifit.subscription.domain.services;
+package com.andreileal.dev.nutrifit.subscription.domain.services.auth;
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.AccessToken;
 

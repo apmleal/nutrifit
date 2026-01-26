@@ -1,6 +1,6 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.config.security;
 
-import com.andreileal.dev.nutrifit.subscription.domain.services.TokenGenerator;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.auth.AuthEntryPointJwt;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.auth.AuthTokenFilter;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +21,7 @@ public class SecurityConfig {
     public SecurityConfig(AuthEntryPointJwt unauthorizedHandler) {
         this.unauthorizedHandler = unauthorizedHandler;
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
