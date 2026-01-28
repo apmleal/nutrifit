@@ -7,18 +7,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.andreileal.dev.nutrifit.subscription.infrastructure.conts.SecurityWhiteList.PUBLIC_ENDPOINTS;
+
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
 
+    private static final AntPathMatcher matcher = new AntPathMatcher();
     public static final String BEARER_ = "Bearer ";
 
     private final TokenGenerator tokenGenerator;
@@ -31,29 +36,52 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        // 🔓 rotas públicas NÃO passam pelo filtro
+        if (isWhiteListed(path)) {
+            return true;
+        }
+
+        // 🔓 fora da API não aplica JWT
+        return !path.startsWith("/api/");
+    }
+
+    @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        try {
-            String jwt = parseJwt(request);
-            if (jwt != null && tokenGenerator.validar(jwt)) {
-                String email = tokenGenerator.extrairEmail(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource()
-                        .buildDetails(request));
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authenticationToken);
-            }
-        } catch (Exception e) {
-            log.error("Cannot set user authentication: {}", e);
+        String path = request.getRequestURI();
+
+        if (isWhiteListed(path)) {
+            filterChain.doFilter(request, response);
+            return;
         }
-        filterChain.doFilter(request, response);
+
+        String jwt = parseJwt(request);
+
+        if (jwt != null && tokenGenerator.validar(jwt)) {
+            String email = tokenGenerator.extrairEmail(jwt);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities());
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource()
+                    .buildDetails(request));
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authenticationToken);
+            filterChain.doFilter(request, response);
+
+            return;
+        }
+
+        throw new BadCredentialsException("Invalid token");
+
     }
 
     private String parseJwt(HttpServletRequest request) {
@@ -62,6 +90,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             return headerAuth.replace(BEARER_, "");
         }
         return null;
+    }
+
+
+    private boolean isWhiteListed(String path) {
+        for (String white : PUBLIC_ENDPOINTS) {
+            if (matcher.match(white, path)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
