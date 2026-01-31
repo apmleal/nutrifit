@@ -1,22 +1,27 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.mappers;
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.User;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Email;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Nome;
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities.UserEntity;
 
 public class UserMapper {
 
     private UserMapper() {
-        // Private constructor for utility class
+
     }
 
     public static User toDomain(UserEntity entity) {
         if (entity == null) {
             return null;
         }
+
+        Email email = new Email(entity.getEmail());
+        Nome nome = new Nome(entity.getName());
         SenhaHasheada senhaHasheada = new SenhaHasheada(entity.getPassword());
 
-        return new User(entity.getId(), entity.getEmail(), entity.getName(), senhaHasheada);
+        return User.reconstituir(entity.getId(), email, nome, senhaHasheada);
     }
 
     public static UserEntity toEntity(User domain) {
@@ -26,8 +31,8 @@ public class UserMapper {
 
         UserEntity entity = new UserEntity();
         entity.setId(domain.getId());
-        entity.setEmail(domain.getEmail());
-        entity.setName(domain.getNome());
+        entity.setEmail(domain.getEmail().valor());
+        entity.setName(domain.getNome().valor());
         entity.setPassword(domain.getSenhaHasheada().hash());
 
         return entity;

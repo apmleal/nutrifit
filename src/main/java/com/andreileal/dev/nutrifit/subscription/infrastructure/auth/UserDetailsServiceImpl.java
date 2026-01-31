@@ -1,14 +1,15 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
-import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
+import java.util.Collections;
+
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -27,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         var user = UserMapper.toDomain(userEntity);
 
         return new User(
-                user.getEmail(),
+                user.getEmail().valor(),
                 user.getSenhaHasheada().hash(),
                 Collections.emptyList());
     }

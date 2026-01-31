@@ -1,15 +1,22 @@
 package com.andreileal.dev.nutrifit.subscription.presentation.controllers;
 
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.LoginUseCase;
-import com.andreileal.dev.nutrifit.subscription.presentation.dtos.RequestAutenticacaoDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.andreileal.dev.nutrifit.subscription.application.usecases.LoginUseCase;
+import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.LoginCommand;
+import com.andreileal.dev.nutrifit.subscription.presentation.dtos.requests.RequestAutenticacaoDto;
+import com.andreileal.dev.nutrifit.subscription.presentation.dtos.responses.LoginResponseDto;
+
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
+@Validated
 public class AuthController {
 
     private final LoginUseCase loginUseCase;
@@ -19,10 +26,11 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<String> signin(@RequestBody RequestAutenticacaoDto request) {
+    public ResponseEntity<LoginResponseDto> signin(@Valid @RequestBody RequestAutenticacaoDto request) {
 
-        var token = loginUseCase.execute(request.email(), request.senha());
+        var command = new LoginCommand(request.email(), request.senha());
+        var result = loginUseCase.execute(command);
 
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(LoginResponseDto.fromLoginResult(result));
     }
 }

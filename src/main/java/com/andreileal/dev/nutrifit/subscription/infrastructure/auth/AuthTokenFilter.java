@@ -1,11 +1,9 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+import static com.andreileal.dev.nutrifit.subscription.infrastructure.conts.SecurityWhiteList.PUBLIC_ENDPOINTS;
+
+import java.io.IOException;
+
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,9 +14,13 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
 
-import static com.andreileal.dev.nutrifit.subscription.infrastructure.conts.SecurityWhiteList.PUBLIC_ENDPOINTS;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
@@ -30,7 +32,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     public AuthTokenFilter(TokenGenerator tokenGenerator,
-                           UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService) {
         this.tokenGenerator = tokenGenerator;
         this.userDetailsService = userDetailsService;
     }
@@ -39,19 +41,17 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // 🔓 rotas públicas NÃO passam pelo filtro
         if (isWhiteListed(path)) {
             return true;
         }
 
-        // 🔓 fora da API não aplica JWT
         return !path.startsWith("/api/");
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
@@ -92,7 +92,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         return null;
     }
 
-
     private boolean isWhiteListed(String path) {
         for (String white : PUBLIC_ENDPOINTS) {
             if (matcher.match(white, path)) {
@@ -102,4 +101,3 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         return false;
     }
 }
-
