@@ -1,4 +1,4 @@
-﻿package com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects;
+package com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;

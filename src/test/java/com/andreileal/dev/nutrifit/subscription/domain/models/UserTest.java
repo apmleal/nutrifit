@@ -1,4 +1,4 @@
-﻿package com.andreileal.dev.nutrifit.subscription.domain.models;
+package com.andreileal.dev.nutrifit.subscription.domain.models;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -48,7 +48,7 @@ class UserTest {
     @Test
     @DisplayName("Deve criar novo usuario usando factory method criar()")
     void deveCriarNovoUsuarioUsandoFactoryMethodCriar() {
-        // Arrange
+        // ArrangetenantIdValido, planIdValido,
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
 
         // Act
@@ -64,7 +64,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Deve reconstituir usu�rio existente usando factory method reconstituir()")
+    @DisplayName("Deve reconstituir usu?rio existente usando factory method reconstituir()")
     void devereconstituirUsuarioExistenteUsandoFactoryMethodReconstituir() {
         // Arrange
         UUID idExistente = UUID.randomUUID();
@@ -184,7 +184,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Dois usu�rios com mesmo ID devem ser iguais")
+    @DisplayName("Dois usu?rios com mesmo ID devem ser iguais")
     void doisUsuariosComMesmoIdDevemSerIguais() {
         // Arrange
         UUID id = UUID.randomUUID();
@@ -201,8 +201,10 @@ class UserTest {
     void doisUsuariosComIdsDiferentesNaoDevemSerIguais() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user1 = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher);
-        User user2 = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher);
+        User user1 = User.criar(emailValido, nomeValido, senhaPlanaValida,
+                passwordHasher);
+        User user2 = User.criar(emailValido, nomeValido, senhaPlanaValida,
+                passwordHasher);
 
         // Act & Assert
         assertNotEquals(user1, user2);
@@ -214,7 +216,8 @@ class UserTest {
     void alteracoesDevemRetornarNovaInstancia() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User userOriginal = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher);
+        User userOriginal = User.criar(emailValido, nomeValido, senhaPlanaValida,
+                passwordHasher);
         Email emailOriginal = userOriginal.getEmail();
         Nome nomeOriginal = userOriginal.getNome();
 

@@ -23,7 +23,8 @@ public class User {
         this.senhaHasheada = Objects.requireNonNull(senhaHasheada, "Senha nao pode ser nula");
     }
 
-    public static User criar(Email email, Nome nome, SenhaPlana senhaPlana, PasswordHasher passwordHasher) {
+    public static User criar(Email email, Nome nome, SenhaPlana senhaPlana,
+            PasswordHasher passwordHasher) {
         validarDadosCriacao(email, nome, senhaPlana);
         SenhaHasheada senhaHasheada = passwordHasher.hash(senhaPlana);
         return new User(UUID.randomUUID(), email, nome, senhaHasheada);

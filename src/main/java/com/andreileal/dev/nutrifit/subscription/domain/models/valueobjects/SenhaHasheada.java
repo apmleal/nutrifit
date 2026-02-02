@@ -11,8 +11,8 @@ public record SenhaHasheada(String hash) {
             throw new SenhaInvalidaException("Hash da senha nao pode ser vazio");
         }
 
-        // Validação de formato bcrypt
-        // Bcrypt sempre começa com $2a$, $2b$, ou $2y$ e tem 60 caracteres
+        // Validacao de formato bcrypt
+        // Bcrypt sempre comeca com $2a$, $2b$, ou $2y$ e tem 60 caracteres
         if (!hash.startsWith("$2a$") && !hash.startsWith("$2b$") && !hash.startsWith("$2y$")) {
             throw new SenhaInvalidaException(
                     "Hash deve estar no formato bcrypt (iniciando com $2a$, $2b$ ou $2y$)");

@@ -1,4 +1,4 @@
-﻿package com.andreileal.dev.nutrifit.subscription.application.usecases;
+package com.andreileal.dev.nutrifit.subscription.application.usecases;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;

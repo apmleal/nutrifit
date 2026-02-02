@@ -1,4 +1,4 @@
-﻿package com.andreileal.dev.nutrifit.subscription.presentation.controllers;
+package com.andreileal.dev.nutrifit.subscription.presentation.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

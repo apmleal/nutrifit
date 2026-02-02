@@ -1,7 +1,12 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities;
 
 import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entity.EntityBase;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,5 +27,9 @@ public class UserEntity extends EntityBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tenant", nullable = false)
     private TenantEntity tenant;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_plan", nullable = false)
+    private PlanEntity plan;
 
 }

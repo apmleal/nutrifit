@@ -1,4 +1,4 @@
-﻿package com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects;
+package com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects;
 
 import com.andreileal.dev.nutrifit.subscription.domain.exceptions.SenhaInvalidaException;
 import org.junit.jupiter.api.DisplayName;
