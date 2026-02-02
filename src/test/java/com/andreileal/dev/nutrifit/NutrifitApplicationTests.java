@@ -1,4 +1,4 @@
-package com.andreileal.dev.nutrifit;
+﻿package com.andreileal.dev.nutrifit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

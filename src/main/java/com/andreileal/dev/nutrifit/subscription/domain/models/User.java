@@ -41,14 +41,12 @@ public class User {
 
     public User alterarEmail(Email novoEmail) {
         Objects.requireNonNull(novoEmail, "Novo email nao pode ser nulo");
-        this.email = novoEmail;
-        return this;
+        return new User(this.id, novoEmail, this.nome, this.senhaHasheada);
     }
 
     public User atualizarNome(Nome novoNome) {
         Objects.requireNonNull(novoNome, "Novo nome nao pode ser nulo");
-        this.nome = novoNome;
-        return this;
+        return new User(this.id, this.email, novoNome, this.senhaHasheada);
     }
 
     public boolean isPasswordValid(SenhaPlana senhaPlana, PasswordHasher passwordHasher) {
