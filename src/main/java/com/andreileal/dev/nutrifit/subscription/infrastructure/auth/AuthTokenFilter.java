@@ -1,9 +1,12 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
-import static com.andreileal.dev.nutrifit.subscription.infrastructure.conts.SecurityWhiteList.PUBLIC_ENDPOINTS;
-
-import java.io.IOException;
-
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.config.context.TenantContext;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,13 +17,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
+import java.io.IOException;
+import java.util.UUID;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+import static com.andreileal.dev.nutrifit.subscription.infrastructure.conts.SecurityWhiteList.PUBLIC_ENDPOINTS;
 
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
@@ -32,7 +32,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     public AuthTokenFilter(TokenGenerator tokenGenerator,
-            UserDetailsService userDetailsService) {
+                           UserDetailsService userDetailsService) {
         this.tokenGenerator = tokenGenerator;
         this.userDetailsService = userDetailsService;
     }
@@ -50,38 +50,48 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain)
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        try {
 
-        if (isWhiteListed(path)) {
-            filterChain.doFilter(request, response);
-            return;
+
+            String path = request.getRequestURI();
+
+            if (isWhiteListed(path)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String jwt = parseJwt(request);
+
+            if (jwt != null && tokenGenerator.validar(jwt)) {
+                String email = tokenGenerator.extrairEmail(jwt);
+                UUID idTenant = tokenGenerator.extrairIdTenant(jwt);
+
+                TenantContext.setTenantId(idTenant);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource()
+                        .buildDetails(request));
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authenticationToken);
+                filterChain.doFilter(request, response);
+
+                return;
+            }
+
+            throw new BadCredentialsException("Invalid token");
+        } finally {
+            TenantContext.clear();
+            SecurityContextHolder.clearContext();
         }
-
-        String jwt = parseJwt(request);
-
-        if (jwt != null && tokenGenerator.validar(jwt)) {
-            String email = tokenGenerator.extrairEmail(jwt);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities());
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource()
-                    .buildDetails(request));
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authenticationToken);
-            filterChain.doFilter(request, response);
-
-            return;
-        }
-
-        throw new BadCredentialsException("Invalid token");
-
     }
 
     private String parseJwt(HttpServletRequest request) {

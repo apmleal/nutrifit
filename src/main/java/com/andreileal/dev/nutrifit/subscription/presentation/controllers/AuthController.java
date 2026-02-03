@@ -1,12 +1,5 @@
 package com.andreileal.dev.nutrifit.subscription.presentation.controllers;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.andreileal.dev.nutrifit.subscription.application.usecases.CreateUserUseCase;
 import com.andreileal.dev.nutrifit.subscription.application.usecases.LoginUseCase;
 import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.CreateUserCommand;
@@ -15,8 +8,13 @@ import com.andreileal.dev.nutrifit.subscription.presentation.dtos.requests.Reque
 import com.andreileal.dev.nutrifit.subscription.presentation.dtos.requests.RequestCreateUserDto;
 import com.andreileal.dev.nutrifit.subscription.presentation.dtos.responses.CreateUserResponseDto;
 import com.andreileal.dev.nutrifit.subscription.presentation.dtos.responses.LoginResponseDto;
-
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
@@ -43,7 +41,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<CreateUserResponseDto> signup(@Valid @RequestBody RequestCreateUserDto request) {
 
-        var command = new CreateUserCommand(request.email(), request.senha(), request.name());
+        var command = new CreateUserCommand(request.email(), request.senha(), request.name(), request.idPlan());
         var result = createUserUseCase.execute(command);
 
         return ResponseEntity.ok(CreateUserResponseDto.fromCreateUserResult(result));

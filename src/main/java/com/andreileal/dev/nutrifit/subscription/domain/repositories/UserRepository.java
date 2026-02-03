@@ -1,5 +1,7 @@
 package com.andreileal.dev.nutrifit.subscription.domain.repositories;
 
+import com.andreileal.dev.nutrifit.subscription.domain.models.Plan;
+import com.andreileal.dev.nutrifit.subscription.domain.models.Tenant;
 import com.andreileal.dev.nutrifit.subscription.domain.models.User;
 
 import java.util.Optional;
@@ -7,5 +9,5 @@ import java.util.Optional;
 public interface UserRepository {
     Optional<User> findUserByEmail(String email);
 
-    User save(User user);
+    User createAccount(User user, Plan plan, Tenant tenant);
 }

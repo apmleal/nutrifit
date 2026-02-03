@@ -1,14 +1,14 @@
 package com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entity;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @MappedSuperclass
 @Getter
@@ -21,12 +21,23 @@ public abstract class EntityBase {
     private UUID id;
 
     public EntityBase() {
-        this.createdAt = LocalDateTime.now();
+        var now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+
     }
 
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    public EntityBase(UUID id) {
+        this.id = id;
+    }
+
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     public void setUpdatedAt() {

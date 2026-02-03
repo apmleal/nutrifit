@@ -1,16 +1,8 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities;
 
 import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entity.EntityBase;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "tb_user", schema = "subscription")
@@ -18,6 +10,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class UserEntity extends EntityBase {
 
     private String name;

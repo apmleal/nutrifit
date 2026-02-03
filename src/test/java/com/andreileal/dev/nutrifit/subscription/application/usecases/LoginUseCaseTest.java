@@ -1,21 +1,14 @@
 package com.andreileal.dev.nutrifit.subscription.application.usecases;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Optional;
-import java.util.UUID;
-
+import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.LoginCommand;
+import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.results.LoginResult;
+import com.andreileal.dev.nutrifit.subscription.domain.exceptions.CredenciaisInvalidasException;
+import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioNaoEncontradoException;
+import com.andreileal.dev.nutrifit.subscription.domain.models.User;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.*;
+import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,19 +17,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.LoginCommand;
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.results.LoginResult;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.CredenciaisInvalidasException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioNaoEncontradoException;
-import com.andreileal.dev.nutrifit.subscription.domain.models.User;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.AccessToken;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Email;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Nome;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
-import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LoginUseCase Tests")
@@ -73,7 +59,7 @@ class LoginUseCaseTest {
                 UUID.randomUUID(),
                 emailValido,
                 nomeValido,
-                senhaHasheadaValida);
+                senhaHasheadaValida, null);
     }
 
     @Test
@@ -82,7 +68,7 @@ class LoginUseCaseTest {
         // Arrange
         when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString())).thenReturn(tokenGerado);
+        when(tokenGenerator.gerar(anyString(), UUID.randomUUID())).thenReturn(tokenGerado);
 
         // Act
         LoginResult result = loginUseCase.execute(loginCommandValido);
@@ -96,7 +82,7 @@ class LoginUseCaseTest {
 
         verify(userRepository).findUserByEmail(anyString());
         verify(passwordHasher).matches(any(SenhaPlana.class), eq(userMock.getSenhaHasheada()));
-        verify(tokenGenerator).gerar(anyString());
+        verify(tokenGenerator).gerar(anyString(), UUID.randomUUID());
     }
 
     @Test
@@ -113,7 +99,7 @@ class LoginUseCaseTest {
         assertNotNull(exception);
         verify(userRepository).findUserByEmail(anyString());
         verify(passwordHasher, never()).matches(any(), any());
-        verify(tokenGenerator, never()).gerar(anyString());
+        verify(tokenGenerator, never()).gerar(anyString(), UUID.randomUUID());
     }
 
     @Test
@@ -131,7 +117,7 @@ class LoginUseCaseTest {
         assertNotNull(exception);
         verify(userRepository).findUserByEmail(anyString());
         verify(passwordHasher).matches(any(SenhaPlana.class), eq(userMock.getSenhaHasheada()));
-        verify(tokenGenerator, never()).gerar(anyString());
+        verify(tokenGenerator, never()).gerar(anyString(), UUID.randomUUID());
     }
 
     @Test
@@ -140,7 +126,7 @@ class LoginUseCaseTest {
         // Arrange
         when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString())).thenReturn(tokenGerado);
+        when(tokenGenerator.gerar(anyString(), UUID.randomUUID())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(loginCommandValido);
@@ -156,7 +142,7 @@ class LoginUseCaseTest {
         when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(argThat(senha -> senha.plena().equals("senha123")), any(SenhaHasheada.class)))
                 .thenReturn(true);
-        when(tokenGenerator.gerar(anyString())).thenReturn(tokenGerado);
+        when(tokenGenerator.gerar(anyString(), UUID.randomUUID())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(loginCommandValido);
@@ -172,13 +158,13 @@ class LoginUseCaseTest {
         // Arrange
         when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString())).thenReturn(tokenGerado);
+        when(tokenGenerator.gerar(anyString(), UUID.randomUUID())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(loginCommandValido);
 
         // Assert
-        verify(tokenGenerator).gerar("usuario@example.com");
+        verify(tokenGenerator).gerar("usuario@example.com", UUID.randomUUID());
     }
 
     @Test
@@ -187,7 +173,7 @@ class LoginUseCaseTest {
         // Arrange
         when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString())).thenReturn(tokenGerado);
+        when(tokenGenerator.gerar(anyString(), UUID.randomUUID())).thenReturn(tokenGerado);
 
         // Act
         LoginResult result = loginUseCase.execute(loginCommandValido);
@@ -210,7 +196,7 @@ class LoginUseCaseTest {
         LoginCommand commandComEmailMaiusculo = new LoginCommand("USUARIO@EXAMPLE.COM", "senha123");
         when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString())).thenReturn(tokenGerado);
+        when(tokenGenerator.gerar(anyString(), UUID.randomUUID())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(commandComEmailMaiusculo);

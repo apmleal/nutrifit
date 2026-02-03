@@ -3,6 +3,8 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.AccessToken;
 import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.conts.ParamTenantId;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -32,9 +35,10 @@ public class JwtTokenGenerator implements TokenGenerator {
     }
 
     @Override
-    public AccessToken gerar(String email) {
+    public AccessToken gerar(String email, UUID idTenant) {
         String token = Jwts.builder()
                 .subject(email)
+                .claim(ParamTenantId.ID_TENANT, idTenant)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key)
@@ -45,12 +49,14 @@ public class JwtTokenGenerator implements TokenGenerator {
 
     @Override
     public String extrairEmail(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
+        return extractAllProperties(token)
                 .getSubject();
+    }
+
+    @Override
+    public UUID extrairIdTenant(String token) {
+        Claims claims = extractAllProperties(token);
+        return claims.get(ParamTenantId.ID_TENANT, UUID.class);
     }
 
     @Override
@@ -62,5 +68,13 @@ public class JwtTokenGenerator implements TokenGenerator {
             log.error("JWT validation error: {}", e.getMessage());
             return false;
         }
+    }
+
+    private Claims extractAllProperties(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
