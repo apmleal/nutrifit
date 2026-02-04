@@ -1,6 +1,6 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities;
 
-import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entity.EntityBase;
+import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entities.EntityBase;
 import com.andreileal.dev.nutrifit.subscription.domain.models.Feature;
 import jakarta.persistence.*;
 import lombok.*;

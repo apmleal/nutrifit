@@ -1,7 +1,4 @@
-package com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entity;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+package com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
@@ -9,6 +6,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @MappedSuperclass
 @Getter

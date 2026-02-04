@@ -5,6 +5,7 @@ import com.andreileal.dev.nutrifit.subscription.infrastructure.auth.AuthEntryPoi
 import com.andreileal.dev.nutrifit.subscription.infrastructure.auth.AuthTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import static com.andreileal.dev.nutrifit.subscription.infrastructure.conts.SecurityWhiteList.PUBLIC_ENDPOINTS;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;

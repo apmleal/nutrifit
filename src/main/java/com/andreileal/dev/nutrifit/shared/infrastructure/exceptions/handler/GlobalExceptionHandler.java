@@ -1,22 +1,17 @@
 package com.andreileal.dev.nutrifit.shared.infrastructure.exceptions.handler;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.andreileal.dev.nutrifit.shared.infrastructure.exceptions.dto.ErrorResponse;
+import com.andreileal.dev.nutrifit.subscription.domain.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.andreileal.dev.nutrifit.shared.infrastructure.exceptions.dto.ErrorResponse;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.CredenciaisInvalidasException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.DomainException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.EmailInvalidoException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.NomeInvalidoException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.SenhaInvalidaException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioNaoEncontradoException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -35,7 +30,7 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("CREDENCIAIS_INVALIDAS", "Credenciais invalidas"));
     }
 
-    @ExceptionHandler({ EmailInvalidoException.class, NomeInvalidoException.class, SenhaInvalidaException.class })
+    @ExceptionHandler({EmailInvalidoException.class, NomeInvalidoException.class, SenhaInvalidaException.class})
     public ResponseEntity<ErrorResponse> handleValidationErrors(DomainException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -74,6 +69,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("BAD_REQUEST", ex.getMessage()));
+    }
+
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(AuthorizationDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("FORBIDDEN", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

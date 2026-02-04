@@ -37,7 +37,7 @@ public class LoginUseCase {
             throw new CredenciaisInvalidasException();
         }
 
-        var token = jwtProvider.gerar(user.getEmail().valor(), user.getIdTenant());
+        var token = jwtProvider.gerar(user.getEmail().valor(), user.getIdTenant(), user.getRole().name());
 
         return new LoginResult(
                 token.toString(),

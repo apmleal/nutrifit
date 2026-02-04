@@ -20,8 +20,7 @@ public class UserMapper {
         Email email = new Email(entity.getEmail());
         Nome nome = new Nome(entity.getName());
         SenhaHasheada senhaHasheada = new SenhaHasheada(entity.getPassword());
-
-        return User.reconstituir(entity.getId(), email, nome, senhaHasheada);
+        return User.reconstituir(entity.getId(), email, nome, senhaHasheada, entity.getTenant().getId(), entity.getRole(), entity.isActive());
     }
 
     public static UserEntity toEntity(User domain) {

@@ -46,7 +46,7 @@ class UserTest {
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
 
         // Act
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
 
         // Assert
         assertNotNull(user);
@@ -64,7 +64,7 @@ class UserTest {
         UUID idExistente = UUID.randomUUID();
 
         // Act
-        User user = User.reconstituir(idExistente, emailValido, nomeValido, senhaHasheadaValida, null);
+        User user = User.reconstituir(idExistente, emailValido, nomeValido, senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
 
         // Assert
         assertNotNull(user);
@@ -79,7 +79,7 @@ class UserTest {
     void deveAlterarEmailDoUsuario() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
         Email novoEmail = new Email("novoemail@example.com");
 
         // Act
@@ -98,7 +98,7 @@ class UserTest {
     void deveAtualizarNomeDoUsuario() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
         Nome novoNome = new Nome("Maria Santos");
 
         // Act
@@ -117,7 +117,7 @@ class UserTest {
     void deveValidarSenhaCorretamente() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
         SenhaPlana senhaParaValidar = new SenhaPlana("senha123");
         when(passwordHasher.matches(senhaParaValidar, user.getSenhaHasheada())).thenReturn(true);
 
@@ -134,7 +134,7 @@ class UserTest {
     void deveRetornarFalseParaSenhaInvalida() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
         SenhaPlana senhaIncorreta = new SenhaPlana("senhaerrada");
         when(passwordHasher.matches(senhaIncorreta, user.getSenhaHasheada())).thenReturn(false);
 
@@ -151,7 +151,7 @@ class UserTest {
     void deveGarantirImutabilidadeDoId() {
         // Arrange
         UUID idOriginal = UUID.randomUUID();
-        User user = User.reconstituir(idOriginal, emailValido, nomeValido, senhaHasheadaValida, null);
+        User user = User.reconstituir(idOriginal, emailValido, nomeValido, senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
 
         // Act
         User userAlterado = user.alterarEmail(new Email("outro@example.com"));
@@ -166,7 +166,7 @@ class UserTest {
     void deveGarantirImutabilidadeDaSenhaHasheada() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
         SenhaHasheada senhaOriginal = user.getSenhaHasheada();
 
         // Act
@@ -182,8 +182,8 @@ class UserTest {
     void doisUsuariosComMesmoIdDevemSerIguais() {
         // Arrange
         UUID id = UUID.randomUUID();
-        User user1 = User.reconstituir(id, emailValido, nomeValido, senhaHasheadaValida, null);
-        User user2 = User.reconstituir(id, new Email("outro@example.com"), new Nome("Outro Nome"), senhaHasheadaValida, null);
+        User user1 = User.reconstituir(id, emailValido, nomeValido, senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
+        User user2 = User.reconstituir(id, new Email("outro@example.com"), new Nome("Outro Nome"), senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
 
         // Act & Assert
         assertEquals(user1, user2);
@@ -196,9 +196,9 @@ class UserTest {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
         User user1 = User.criar(emailValido, nomeValido, senhaPlanaValida,
-                passwordHasher, null);
+                passwordHasher, null, Role.ADMINISTRATOR, true);
         User user2 = User.criar(emailValido, nomeValido, senhaPlanaValida,
-                passwordHasher, null);
+                passwordHasher, null, Role.ADMINISTRATOR, true);
 
         // Act & Assert
         assertNotEquals(user1, user2);
@@ -211,7 +211,7 @@ class UserTest {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
         User userOriginal = User.criar(emailValido, nomeValido, senhaPlanaValida,
-                passwordHasher, null);
+                passwordHasher, null, Role.ADMINISTRATOR, true);
         Email emailOriginal = userOriginal.getEmail();
         Nome nomeOriginal = userOriginal.getNome();
 

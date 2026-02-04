@@ -40,6 +40,8 @@ public class UserRepositoryJpaImpl implements UserRepository {
                 .password(user.getSenhaHasheada().hash())
                 .plan(planEntity)
                 .tenant(tenantEntity)
+                .role(user.getRole())
+                .active(user.isActive())
                 .build();
 
         var userSaved = userRepositoryJpa.save(userEnttity);

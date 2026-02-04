@@ -4,7 +4,7 @@ import com.andreileal.dev.nutrifit.subscription.domain.exceptions.NomeInvalidoEx
 
 public record Nome(String valor) {
 
-    private static final int TAMANHO_MINIMO = 3;
+    private static final int TAMANHO_MINIMO = 2;
     private static final int TAMANHO_MAXIMO = 200;
 
     public Nome {

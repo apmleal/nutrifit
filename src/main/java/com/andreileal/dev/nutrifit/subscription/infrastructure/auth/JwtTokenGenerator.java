@@ -3,7 +3,7 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.AccessToken;
 import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.conts.ParamTenantId;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.conts.ClaimsTypeJWT;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -35,10 +35,11 @@ public class JwtTokenGenerator implements TokenGenerator {
     }
 
     @Override
-    public AccessToken gerar(String email, UUID idTenant) {
+    public AccessToken gerar(String email, UUID idTenant, String role) {
         String token = Jwts.builder()
                 .subject(email)
-                .claim(ParamTenantId.ID_TENANT, idTenant)
+                .claim(ClaimsTypeJWT.ID_TENANT, idTenant)
+                .claim(ClaimsTypeJWT.ROLE, role)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key)
@@ -56,7 +57,14 @@ public class JwtTokenGenerator implements TokenGenerator {
     @Override
     public UUID extrairIdTenant(String token) {
         Claims claims = extractAllProperties(token);
-        return claims.get(ParamTenantId.ID_TENANT, UUID.class);
+        var id_tenant = claims.get(ClaimsTypeJWT.ID_TENANT, String.class);
+        return UUID.fromString(id_tenant);
+    }
+
+    @Override
+    public String extrairRole(String token) {
+        Claims claims = extractAllProperties(token);
+        return claims.get(ClaimsTypeJWT.ROLE, String.class);
     }
 
     @Override

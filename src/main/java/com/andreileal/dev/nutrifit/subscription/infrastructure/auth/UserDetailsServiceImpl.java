@@ -1,15 +1,16 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.auth;
 
-import java.util.Collections;
-
+import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
+import java.util.List;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -27,9 +28,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         var user = UserMapper.toDomain(userEntity);
 
+        GrantedAuthority authority =
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+
         return new User(
                 user.getEmail().valor(),
                 user.getSenhaHasheada().hash(),
-                Collections.emptyList());
+                List.of(authority));
     }
 }

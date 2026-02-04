@@ -15,7 +15,7 @@ public class TenantMapper {
             return null;
         }
         Nome nome = new Nome(entity.getName());
-        return Tenant.reconstituir(entity.getId(), nome);
+        return Tenant.reconstituir(entity.getId(), nome, entity.isActive());
     }
 
     public static TenantEntity toEntity(Tenant domain) {
@@ -25,6 +25,7 @@ public class TenantMapper {
         TenantEntity entity = new TenantEntity();
         entity.setId(domain.getId());
         entity.setName(domain.getNome().valor());
+        entity.setActive(domain.isActive());
         return entity;
     }
 }

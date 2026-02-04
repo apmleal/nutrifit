@@ -6,11 +6,13 @@ import java.util.UUID;
 
 public interface TokenGenerator {
 
-    AccessToken gerar(String email, UUID tenantId);
+    AccessToken gerar(String email, UUID tenantId, String role);
 
     String extrairEmail(String token);
 
     UUID extrairIdTenant(String token);
+
+    String extrairRole(String token);
 
     boolean validar(String token);
 }
