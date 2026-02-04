@@ -1,7 +1,9 @@
 package com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entities;
 
+import com.andreileal.dev.nutrifit.subscription.infrastructure.config.context.TenantContext;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Filter;
@@ -18,5 +20,10 @@ import java.util.UUID;
 public abstract class TenantBaseEntity extends EntityBase {
 
     @Column(name = "id_tenant", nullable = false, updatable = false)
-    protected UUID IdTenant;
+    protected UUID idTenant;
+
+    @PrePersist
+    protected void assignTenant() {
+        this.idTenant = TenantContext.getTenantId();
+    }
 }
