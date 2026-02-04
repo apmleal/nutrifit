@@ -15,7 +15,7 @@ import java.util.UUID;
 @Filter(name = "tenantFilter", condition = "id_tenant = :idTenant")
 @Getter
 @Setter
-public abstract class TenantBaseEntity {
+public abstract class TenantBaseEntity extends EntityBase {
 
     @Column(name = "id_tenant", nullable = false, updatable = false)
     protected UUID IdTenant;
