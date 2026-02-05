@@ -20,7 +20,8 @@ public class UserMapper {
         Email email = new Email(entity.getEmail());
         Nome nome = new Nome(entity.getName());
         SenhaHasheada senhaHasheada = new SenhaHasheada(entity.getPassword());
-        return User.reconstituir(entity.getId(), email, nome, senhaHasheada, entity.getTenant().getId(), entity.getRole(), entity.isActive());
+        return User.reconstituir(entity.getId(), email, nome, senhaHasheada, entity.getTenant().getId(),
+                entity.getRole(), entity.isActive());
     }
 
     public static UserEntity toEntity(User domain) {
@@ -29,10 +30,12 @@ public class UserMapper {
         }
 
         UserEntity entity = new UserEntity();
-        entity.setId(domain.getId());
+        // Não setar o ID - deixar o Hibernate gerar via @GeneratedValue
         entity.setEmail(domain.getEmail().valor());
         entity.setName(domain.getNome().valor());
         entity.setPassword(domain.getSenhaHasheada().hash());
+        entity.setRole(domain.getRole());
+        entity.setActive(domain.isActive());
 
         return entity;
     }

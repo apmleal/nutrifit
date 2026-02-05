@@ -1,7 +1,7 @@
 package com.andreileal.dev.nutrifit.subscription.application.usecases;
 
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.CreateUserCommand;
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.results.CreateUserResult;
+import com.andreileal.dev.nutrifit.subscription.application.dto.commands.CreateUserCommand;
+import com.andreileal.dev.nutrifit.subscription.application.dto.results.CreateUserResult;
 import com.andreileal.dev.nutrifit.subscription.domain.exceptions.PlanNotFoundException;
 import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioJaCadastradoException;
 import com.andreileal.dev.nutrifit.subscription.domain.models.Role;
@@ -45,11 +45,11 @@ public class CreateUserUseCase {
         }
 
         var plan = planRepository.findPlanById(command.idPlan()).orElseThrow(() -> new PlanNotFoundException(command.idPlan()));
-        var tenant = Tenant.criar(new Nome(emailVO.valor()));
+        var tenant = Tenant.criar(new Nome(emailVO.valor()), plan.getId());
         var newUser = User.criar(emailVO, name, senhaPlana, passwordHasher, tenant.getId(), Role.ADMINISTRATOR, true);
 
         tenant = tenantRepository.save(tenant);
-        newUser = userRepository.createAccount(newUser, plan, tenant);
+        newUser = userRepository.createAccount(newUser, tenant);
 
         return new CreateUserResult(newUser.getId(), emailVO.valor(), name.valor());
 

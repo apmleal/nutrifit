@@ -1,6 +1,6 @@
 package com.andreileal.dev.nutrifit.subscription.presentation.dtos.responses;
 
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.results.LoginResult;
+import com.andreileal.dev.nutrifit.subscription.application.dto.results.LoginResult;
 
 import java.util.UUID;
 

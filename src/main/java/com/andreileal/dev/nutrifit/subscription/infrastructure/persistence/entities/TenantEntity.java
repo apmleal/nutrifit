@@ -1,8 +1,7 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities;
 
 import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entities.EntityBase;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,9 +19,17 @@ public class TenantEntity extends EntityBase {
     private String name;
     private boolean active;
 
+    public TenantEntity(UUID id) {
+        super(id);
+    }
+
     public TenantEntity(UUID id, String name) {
         super(id);
         this.name = name;
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_plan", nullable = false)
+    private PlanEntity plan;
 
 }

@@ -2,16 +2,22 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.enti
 
 import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entities.EntityBase;
 import com.andreileal.dev.nutrifit.subscription.domain.models.Role;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
-import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tb_user", schema = "subscription")
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "idTenant", type = UUID.class))
 @Data
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
@@ -30,10 +36,5 @@ public class UserEntity extends EntityBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tenant", nullable = false)
     private TenantEntity tenant;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_plan", nullable = false)
-    private PlanEntity plan;
-
 
 }

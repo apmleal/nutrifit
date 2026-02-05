@@ -1,25 +1,25 @@
 package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.impl;
 
-import com.andreileal.dev.nutrifit.subscription.domain.models.Plan;
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
 import com.andreileal.dev.nutrifit.subscription.domain.models.Tenant;
 import com.andreileal.dev.nutrifit.subscription.domain.models.User;
 import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.mappers.UserMapper;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities.PlanEntity;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities.TenantEntity;
-import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities.UserEntity;
+import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaTenantRepository;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.repositories.JpaUserRepository;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public class UserRepositoryJpaImpl implements UserRepository {
 
     private final JpaUserRepository userRepositoryJpa;
+    private final JpaTenantRepository tenantRepositoryJpa;
 
-    public UserRepositoryJpaImpl(JpaUserRepository userRepositoryJpa) {
+    public UserRepositoryJpaImpl(JpaUserRepository userRepositoryJpa, JpaTenantRepository tenantRepositoryJpa) {
         this.userRepositoryJpa = userRepositoryJpa;
+        this.tenantRepositoryJpa = tenantRepositoryJpa;
     }
 
     @Override
@@ -29,22 +29,13 @@ public class UserRepositoryJpaImpl implements UserRepository {
     }
 
     @Override
-    public User createAccount(User user, Plan plan, Tenant tenant) {
+    public User createAccount(User user, Tenant tenant) {
+        var tenantEntity = tenantRepositoryJpa.getReferenceById(tenant.getId());
 
-        var planEntity = new PlanEntity(plan.getId());
-        var tenantEntity = new TenantEntity(tenant.getId(), tenant.getNome().valor());
+        var userEntity = UserMapper.toEntity(user);
+        userEntity.setTenant(tenantEntity);
 
-        var userEnttity = UserEntity.builder()
-                .name(user.getNome().valor())
-                .email(user.getEmail().valor())
-                .password(user.getSenhaHasheada().hash())
-                .plan(planEntity)
-                .tenant(tenantEntity)
-                .role(user.getRole())
-                .active(user.isActive())
-                .build();
-
-        var userSaved = userRepositoryJpa.save(userEnttity);
+        var userSaved = userRepositoryJpa.save(userEntity);
         return UserMapper.toDomain(userSaved);
     }
 }

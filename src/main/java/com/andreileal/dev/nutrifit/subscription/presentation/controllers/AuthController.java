@@ -1,9 +1,9 @@
 package com.andreileal.dev.nutrifit.subscription.presentation.controllers;
 
+import com.andreileal.dev.nutrifit.subscription.application.dto.commands.CreateUserCommand;
+import com.andreileal.dev.nutrifit.subscription.application.dto.commands.LoginCommand;
 import com.andreileal.dev.nutrifit.subscription.application.usecases.CreateUserUseCase;
 import com.andreileal.dev.nutrifit.subscription.application.usecases.LoginUseCase;
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.CreateUserCommand;
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.LoginCommand;
 import com.andreileal.dev.nutrifit.subscription.presentation.dtos.requests.RequestAutenticacaoDto;
 import com.andreileal.dev.nutrifit.subscription.presentation.dtos.requests.RequestCreateUserDto;
 import com.andreileal.dev.nutrifit.subscription.presentation.dtos.responses.CreateUserResponseDto;

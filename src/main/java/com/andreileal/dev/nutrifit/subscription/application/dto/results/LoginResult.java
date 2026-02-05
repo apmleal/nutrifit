@@ -1,12 +1,16 @@
-package com.andreileal.dev.nutrifit.subscription.application.usecases.dto.results;
+package com.andreileal.dev.nutrifit.subscription.application.dto.results;
 
 import java.util.UUID;
 
-public record CreateUserResult(
+public record LoginResult(
+        String token,
         UUID userId,
         String email,
         String nome) {
-    public CreateUserResult {
+    public LoginResult {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Token nao pode ser vazio");
+        }
         if (userId == null) {
             throw new IllegalArgumentException("UserId nao pode ser nulo");
         }

@@ -1,4 +1,4 @@
-package com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands;
+package com.andreileal.dev.nutrifit.subscription.application.dto.commands;
 
 public record LoginCommand(
         String email,

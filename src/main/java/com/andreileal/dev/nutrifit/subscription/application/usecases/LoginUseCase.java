@@ -1,7 +1,7 @@
 package com.andreileal.dev.nutrifit.subscription.application.usecases;
 
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.commands.LoginCommand;
-import com.andreileal.dev.nutrifit.subscription.application.usecases.dto.results.LoginResult;
+import com.andreileal.dev.nutrifit.subscription.application.dto.commands.LoginCommand;
+import com.andreileal.dev.nutrifit.subscription.application.dto.results.LoginResult;
 import com.andreileal.dev.nutrifit.subscription.domain.exceptions.CredenciaisInvalidasException;
 import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioNaoEncontradoException;
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Email;
