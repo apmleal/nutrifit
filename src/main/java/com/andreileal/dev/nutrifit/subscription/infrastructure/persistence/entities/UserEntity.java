@@ -2,19 +2,14 @@ package com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.enti
 
 import com.andreileal.dev.nutrifit.shared.infrastructure.persistence.entities.EntityBase;
 import com.andreileal.dev.nutrifit.subscription.domain.models.Role;
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_user", schema = "subscription")
@@ -30,11 +25,11 @@ public class UserEntity extends EntityBase {
     private String password;
     private boolean active;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserTenantEntity> userTenants = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_tenant", nullable = false)
-    private TenantEntity tenant;
-
+    public void addTenant(TenantEntity tenant, Role role) {
+        UserTenantEntity tenantUserEntity = new UserTenantEntity(this, tenant, role, true);
+        userTenants.add(tenantUserEntity);
+    }
 }

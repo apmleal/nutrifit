@@ -6,6 +6,9 @@ import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Nome;
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
 import com.andreileal.dev.nutrifit.subscription.infrastructure.persistence.entities.UserEntity;
 
+import java.util.List;
+import java.util.UUID;
+
 public class UserMapper {
 
     private UserMapper() {
@@ -20,8 +23,25 @@ public class UserMapper {
         Email email = new Email(entity.getEmail());
         Nome nome = new Nome(entity.getName());
         SenhaHasheada senhaHasheada = new SenhaHasheada(entity.getPassword());
-        return User.reconstituir(entity.getId(), email, nome, senhaHasheada, entity.getTenant().getId(),
-                entity.getRole(), entity.isActive());
+        var tenants = entity.getUserTenants().stream().map(t -> t.getTenant().getId()).toList();
+
+        return User.reconstituir(entity.getId(), email, nome, senhaHasheada, tenants,
+                null, entity.isActive());
+    }
+
+    public static User toDomainOneAccount(UserEntity userEntity, UUID idTenant) {
+        if (userEntity == null || idTenant == null) {
+            return null;
+        }
+
+
+        Email email = new Email(userEntity.getEmail());
+        Nome nome = new Nome(userEntity.getName());
+        SenhaHasheada senhaHasheada = new SenhaHasheada(userEntity.getPassword());
+        var tenant = userEntity.getUserTenants().stream().filter(t -> t.getTenant().getId().equals(idTenant)).findFirst().get();
+
+        return User.reconstituir(userEntity.getId(), email, nome, senhaHasheada, List.of(tenant.getId()),
+                tenant.getRole(), userEntity.isActive());
     }
 
     public static UserEntity toEntity(User domain) {
@@ -30,11 +50,9 @@ public class UserMapper {
         }
 
         UserEntity entity = new UserEntity();
-        // Não setar o ID - deixar o Hibernate gerar via @GeneratedValue
         entity.setEmail(domain.getEmail().valor());
         entity.setName(domain.getNome().valor());
         entity.setPassword(domain.getSenhaHasheada().hash());
-        entity.setRole(domain.getRole());
         entity.setActive(domain.isActive());
 
         return entity;

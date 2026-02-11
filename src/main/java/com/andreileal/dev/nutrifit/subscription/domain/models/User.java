@@ -6,6 +6,7 @@ import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Senha
 import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
 import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,30 +15,30 @@ public class User {
     private final UUID id;
     private Email email;
     private Nome nome;
-    private UUID idTenant;
+    private List<UUID> tenants;
     private final SenhaHasheada senhaHasheada;
     private Role role;
     private boolean active;
 
-    private User(UUID id, Email email, Nome nome, SenhaHasheada senhaHasheada, UUID idTenant, Role role, boolean active) {
+    private User(UUID id, Email email, Nome nome, SenhaHasheada senhaHasheada, List<UUID> tenants, Role role, boolean active) {
         this.id = Objects.requireNonNull(id, "ID nao pode ser nulo");
         this.email = Objects.requireNonNull(email, "Email nao pode ser nulo");
         this.nome = Objects.requireNonNull(nome, "Nome nao pode ser nulo");
         this.senhaHasheada = Objects.requireNonNull(senhaHasheada, "Senha nao pode ser nula");
-        this.role = Objects.requireNonNull(role, "Role nao pode ser nulo");
         this.active = active;
-        this.idTenant = idTenant;
+        this.tenants = tenants;
+        this.role = role;
     }
 
     public static User criar(Email email, Nome nome, SenhaPlana senhaPlana,
-                             PasswordHasher passwordHasher, UUID idTenant, Role role, boolean active) {
+                             PasswordHasher passwordHasher, List<UUID> tenants, Role role, boolean active) {
         validarDadosCriacao(email, nome, senhaPlana);
         SenhaHasheada senhaHasheada = passwordHasher.hash(senhaPlana);
-        return new User(UUID.randomUUID(), email, nome, senhaHasheada, idTenant, role, active);
+        return new User(UUID.randomUUID(), email, nome, senhaHasheada, tenants, role, active);
     }
 
-    public static User reconstituir(UUID id, Email email, Nome nome, SenhaHasheada senhaHasheada, UUID idTenant, Role role, boolean active) {
-        return new User(id, email, nome, senhaHasheada, idTenant, role, active);
+    public static User reconstituir(UUID id, Email email, Nome nome, SenhaHasheada senhaHasheada, List<UUID> tenants, Role role, boolean active) {
+        return new User(id, email, nome, senhaHasheada, tenants, role, active);
     }
 
     private static void validarDadosCriacao(Email email, Nome nome, SenhaPlana senhaPlana) {
@@ -48,12 +49,12 @@ public class User {
 
     public User alterarEmail(Email novoEmail) {
         Objects.requireNonNull(novoEmail, "Novo email nao pode ser nulo");
-        return new User(this.id, novoEmail, this.nome, this.senhaHasheada, this.idTenant, this.role, this.active);
+        return new User(this.id, novoEmail, this.nome, this.senhaHasheada, this.tenants, this.role, this.active);
     }
 
     public User atualizarNome(Nome novoNome) {
         Objects.requireNonNull(novoNome, "Novo nome nao pode ser nulo");
-        return new User(this.id, this.email, novoNome, this.senhaHasheada, this.idTenant, this.role, this.active);
+        return new User(this.id, this.email, novoNome, this.senhaHasheada, this.tenants, this.role, this.active);
     }
 
     public boolean isPasswordValid(SenhaPlana senhaPlana, PasswordHasher passwordHasher) {
@@ -72,8 +73,8 @@ public class User {
         return this.nome;
     }
 
-    public UUID getIdTenant() {
-        return this.idTenant;
+    public List<UUID> getTenants() {
+        return this.tenants;
     }
 
     public Role getRole() {

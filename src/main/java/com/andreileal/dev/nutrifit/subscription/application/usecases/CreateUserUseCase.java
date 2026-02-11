@@ -17,6 +17,8 @@ import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHas
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CreateUserUseCase {
 
@@ -46,10 +48,11 @@ public class CreateUserUseCase {
 
         var plan = planRepository.findPlanById(command.idPlan()).orElseThrow(() -> new PlanNotFoundException(command.idPlan()));
         var tenant = Tenant.criar(new Nome(emailVO.valor()), plan.getId());
-        var newUser = User.criar(emailVO, name, senhaPlana, passwordHasher, tenant.getId(), Role.ADMINISTRATOR, true);
+        var newUser = User.criar(emailVO, name, senhaPlana, passwordHasher, List.of(tenant.getId()), Role.ADMINISTRATOR, true);
 
         tenant = tenantRepository.save(tenant);
         newUser = userRepository.createAccount(newUser, tenant);
+
 
         return new CreateUserResult(newUser.getId(), emailVO.valor(), name.valor());
 
