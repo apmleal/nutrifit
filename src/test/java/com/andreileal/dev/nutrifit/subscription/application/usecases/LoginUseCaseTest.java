@@ -1,15 +1,22 @@
 package com.andreileal.dev.nutrifit.subscription.application.usecases;
 
-import com.andreileal.dev.nutrifit.subscription.application.dto.commands.LoginCommand;
-import com.andreileal.dev.nutrifit.subscription.application.dto.results.LoginResult;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.CredenciaisInvalidasException;
-import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioNaoEncontradoException;
-import com.andreileal.dev.nutrifit.subscription.domain.models.Role;
-import com.andreileal.dev.nutrifit.subscription.domain.models.User;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.*;
-import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.TokenGenerator;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,12 +25,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import com.andreileal.dev.nutrifit.subscription.application.dto.commands.LoginCommand;
+import com.andreileal.dev.nutrifit.subscription.application.dto.results.LoginResult;
+import com.andreileal.dev.nutrifit.subscription.domain.exceptions.CredenciaisInvalidasException;
+import com.andreileal.dev.nutrifit.subscription.domain.exceptions.UsuarioNaoEncontradoException;
+import com.andreileal.dev.nutrifit.subscription.domain.models.Role;
+import com.andreileal.dev.nutrifit.subscription.domain.models.User;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Email;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Nome;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
+import com.andreileal.dev.nutrifit.subscription.domain.repositories.UserRepository;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LoginUseCase Tests")
@@ -31,9 +44,6 @@ class LoginUseCaseTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private TokenGenerator tokenGenerator;
 
     @Mock
     private PasswordHasher passwordHasher;
@@ -46,51 +56,54 @@ class LoginUseCaseTest {
     private Email emailValido;
     private Nome nomeValido;
     private SenhaHasheada senhaHasheadaValida;
-    private AccessToken tokenGerado;
+    private List<UUID> tenantsValidos;
 
     @BeforeEach
     void setUp() {
         loginCommandValido = new LoginCommand("usuario@example.com", "senha123");
         emailValido = new Email("usuario@example.com");
-        nomeValido = new Nome("Jo�o Silva");
+        nomeValido = new Nome("João Silva");
         senhaHasheadaValida = new SenhaHasheada("$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy");
-        tokenGerado = new AccessToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9");
+        tenantsValidos = List.of(UUID.randomUUID(), UUID.randomUUID());
 
         userMock = User.reconstituir(
                 UUID.randomUUID(),
                 emailValido,
                 nomeValido,
-                senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
+                senhaHasheadaValida,
+                tenantsValidos,
+                Role.ADMINISTRATOR,
+                true);
     }
 
     @Test
     @DisplayName("Deve executar login com sucesso")
     void deveExecutarLoginComSucesso() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name())).thenReturn(tokenGerado);
 
         // Act
         LoginResult result = loginUseCase.execute(loginCommandValido);
 
         // Assert
         assertNotNull(result);
-        assertEquals(tokenGerado.valor(), result.token());
         assertEquals(userMock.getId(), result.userId());
         assertEquals(userMock.getEmail().valor(), result.email());
         assertEquals(userMock.getNome().valor(), result.nome());
+        assertEquals(tenantsValidos, result.tenants());
+        assertNotNull(result.tenants());
+        assertEquals(2, result.tenants().size());
 
-        verify(userRepository).findUserByEmail(anyString());
+        verify(userRepository).findByEmailWithTenants(anyString());
         verify(passwordHasher).matches(any(SenhaPlana.class), eq(userMock.getSenhaHasheada()));
-        verify(tokenGenerator).gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name());
     }
 
     @Test
-    @DisplayName("Deve lan�ar exce��o quando usu�rio n�o for encontrado")
+    @DisplayName("Deve lançar exceção quando usuário não for encontrado")
     void deveLancarExcecaoQuandoUsuarioNaoForEncontrado() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.empty());
 
         // Act & Assert
         UsuarioNaoEncontradoException exception = assertThrows(
@@ -98,16 +111,15 @@ class LoginUseCaseTest {
                 () -> loginUseCase.execute(loginCommandValido));
 
         assertNotNull(exception);
-        verify(userRepository).findUserByEmail(anyString());
+        verify(userRepository).findByEmailWithTenants(anyString());
         verify(passwordHasher, never()).matches(any(), any());
-        verify(tokenGenerator, never()).gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name());
     }
 
     @Test
-    @DisplayName("Deve lan�ar exce��o quando senha for inv�lida")
+    @DisplayName("Deve lançar exceção quando senha for inválida")
     void deveLancarExcecaoQuandoSenhaForInvalida() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(false);
 
         // Act & Assert
@@ -116,34 +128,31 @@ class LoginUseCaseTest {
                 () -> loginUseCase.execute(loginCommandValido));
 
         assertNotNull(exception);
-        verify(userRepository).findUserByEmail(anyString());
+        verify(userRepository).findByEmailWithTenants(anyString());
         verify(passwordHasher).matches(any(SenhaPlana.class), eq(userMock.getSenhaHasheada()));
-        verify(tokenGenerator, never()).gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name());
     }
 
     @Test
     @DisplayName("Deve criar Email VO corretamente a partir do comando")
     void deveCriarEmailVoCorretamenteAPartirDoComando() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(loginCommandValido);
 
         // Assert
-        verify(userRepository).findUserByEmail("usuario@example.com");
+        verify(userRepository).findByEmailWithTenants("usuario@example.com");
     }
 
     @Test
     @DisplayName("Deve criar SenhaPlana VO corretamente a partir do comando")
     void deveCriarSenhaPlanaVoCorretamenteAPartirDoComando() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(argThat(senha -> senha.plena().equals("senha123")), any(SenhaHasheada.class)))
                 .thenReturn(true);
-        when(tokenGenerator.gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(loginCommandValido);
@@ -154,40 +163,39 @@ class LoginUseCaseTest {
     }
 
     @Test
-    @DisplayName("Deve chamar tokenGenerator com o email correto")
-    void deveChamarTokenGeneratorComOUsuarioCorreto() {
+    @DisplayName("Deve retornar lista de tenants do usuario")
+    void deveRetornarListaDeTenantsDoUsuario() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name())).thenReturn(tokenGerado);
 
         // Act
-        loginUseCase.execute(loginCommandValido);
+        LoginResult result = loginUseCase.execute(loginCommandValido);
 
         // Assert
-        verify(tokenGenerator).gerar("usuario@example.com", UUID.randomUUID(), Role.ADMINISTRATOR.name());
+        assertNotNull(result.tenants());
+        assertEquals(tenantsValidos, result.tenants());
     }
 
     @Test
     @DisplayName("Deve retornar LoginResult com todos os campos preenchidos")
     void deveRetornarLoginResultComTodosOsCamposPreenchidos() {
         // Arrange
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name())).thenReturn(tokenGerado);
 
         // Act
         LoginResult result = loginUseCase.execute(loginCommandValido);
 
         // Assert
         assertAll(
-                () -> assertNotNull(result.token(), "Token n�o deve ser nulo"),
-                () -> assertNotNull(result.userId(), "UserId n�o deve ser nulo"),
-                () -> assertNotNull(result.email(), "Email n�o deve ser nulo"),
-                () -> assertNotNull(result.nome(), "Nome n�o deve ser nulo"),
-                () -> assertFalse(result.token().isBlank(), "Token n�o deve ser vazio"),
-                () -> assertFalse(result.email().isBlank(), "Email n�o deve ser vazio"),
-                () -> assertFalse(result.nome().isBlank(), "Nome n�o deve ser vazio"));
+                () -> assertNotNull(result.userId(), "UserId não deve ser nulo"),
+                () -> assertNotNull(result.email(), "Email não deve ser nulo"),
+                () -> assertNotNull(result.nome(), "Nome não deve ser nulo"),
+                () -> assertNotNull(result.tenants(), "Tenants não deve ser nulo"),
+                () -> assertFalse(result.email().isBlank(), "Email não deve ser vazio"),
+                () -> assertFalse(result.nome().isBlank(), "Nome não deve ser vazio"),
+                () -> assertFalse(result.tenants().isEmpty(), "Tenants não deve ser vazio"));
     }
 
     @Test
@@ -195,14 +203,13 @@ class LoginUseCaseTest {
     void deveNormalizarEmailAntesDeBuscar() {
         // Arrange
         LoginCommand commandComEmailMaiusculo = new LoginCommand("USUARIO@EXAMPLE.COM", "senha123");
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(userMock));
+        when(userRepository.findByEmailWithTenants(anyString())).thenReturn(Optional.of(userMock));
         when(passwordHasher.matches(any(SenhaPlana.class), any(SenhaHasheada.class))).thenReturn(true);
-        when(tokenGenerator.gerar(anyString(), UUID.randomUUID(), Role.ADMINISTRATOR.name())).thenReturn(tokenGerado);
 
         // Act
         loginUseCase.execute(commandComEmailMaiusculo);
 
         // Assert
-        verify(userRepository).findUserByEmail("usuario@example.com");
+        verify(userRepository).findByEmailWithTenants("usuario@example.com");
     }
 }

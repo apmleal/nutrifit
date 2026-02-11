@@ -1,10 +1,18 @@
-﻿package com.andreileal.dev.nutrifit.subscription.domain.models;
+package com.andreileal.dev.nutrifit.subscription.domain.models;
 
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Email;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Nome;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
-import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
-import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,12 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Email;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.Nome;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaHasheada;
+import com.andreileal.dev.nutrifit.subscription.domain.models.valueobjects.SenhaPlana;
+import com.andreileal.dev.nutrifit.subscription.domain.services.auth.PasswordHasher;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("User Entity Tests")
@@ -30,6 +37,7 @@ class UserTest {
     private Nome nomeValido;
     private SenhaPlana senhaPlanaValida;
     private SenhaHasheada senhaHasheadaValida;
+    private List<UUID> tenantsValidos;
 
     @BeforeEach
     void setUp() {
@@ -37,16 +45,17 @@ class UserTest {
         nomeValido = new Nome("Joao Silva");
         senhaPlanaValida = new SenhaPlana("senha123");
         senhaHasheadaValida = new SenhaHasheada("$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy");
+        tenantsValidos = List.of(UUID.randomUUID());
     }
 
     @Test
     @DisplayName("Deve criar novo usuario usando factory method criar()")
     void deveCriarNovoUsuarioUsandoFactoryMethodCriar() {
-        // ArrangetenantIdValido, planIdValido,
+        // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
 
         // Act
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
 
         // Assert
         assertNotNull(user);
@@ -54,17 +63,20 @@ class UserTest {
         assertEquals(emailValido, user.getEmail());
         assertEquals(nomeValido, user.getNome());
         assertEquals(senhaHasheadaValida, user.getSenhaHasheada());
+        assertEquals(tenantsValidos, user.getTenants());
+        assertEquals(Role.ADMINISTRATOR, user.getRole());
+        assertTrue(user.isActive());
         verify(passwordHasher).hash(senhaPlanaValida);
     }
 
     @Test
-    @DisplayName("Deve reconstituir usu?rio existente usando factory method reconstituir()")
-    void devereconstituirUsuarioExistenteUsandoFactoryMethodReconstituir() {
+    @DisplayName("Deve reconstituir usuario existente usando factory method reconstituir()")
+    void deveReconstituirUsuarioExistenteUsandoFactoryMethodReconstituir() {
         // Arrange
         UUID idExistente = UUID.randomUUID();
 
         // Act
-        User user = User.reconstituir(idExistente, emailValido, nomeValido, senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
+        User user = User.reconstituir(idExistente, emailValido, nomeValido, senhaHasheadaValida, tenantsValidos, Role.ADMINISTRATOR, true);
 
         // Assert
         assertNotNull(user);
@@ -72,6 +84,9 @@ class UserTest {
         assertEquals(emailValido, user.getEmail());
         assertEquals(nomeValido, user.getNome());
         assertEquals(senhaHasheadaValida, user.getSenhaHasheada());
+        assertEquals(tenantsValidos, user.getTenants());
+        assertEquals(Role.ADMINISTRATOR, user.getRole());
+        assertTrue(user.isActive());
     }
 
     @Test
@@ -79,7 +94,7 @@ class UserTest {
     void deveAlterarEmailDoUsuario() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         Email novoEmail = new Email("novoemail@example.com");
 
         // Act
@@ -91,6 +106,7 @@ class UserTest {
         assertEquals(user.getId(), userComEmailAlterado.getId());
         assertEquals(user.getNome(), userComEmailAlterado.getNome());
         assertEquals(user.getSenhaHasheada(), userComEmailAlterado.getSenhaHasheada());
+        assertEquals(user.getTenants(), userComEmailAlterado.getTenants());
     }
 
     @Test
@@ -98,7 +114,7 @@ class UserTest {
     void deveAtualizarNomeDoUsuario() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         Nome novoNome = new Nome("Maria Santos");
 
         // Act
@@ -110,6 +126,7 @@ class UserTest {
         assertEquals(user.getId(), userComNomeAtualizado.getId());
         assertEquals(user.getEmail(), userComNomeAtualizado.getEmail());
         assertEquals(user.getSenhaHasheada(), userComNomeAtualizado.getSenhaHasheada());
+        assertEquals(user.getTenants(), userComNomeAtualizado.getTenants());
     }
 
     @Test
@@ -117,7 +134,7 @@ class UserTest {
     void deveValidarSenhaCorretamente() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         SenhaPlana senhaParaValidar = new SenhaPlana("senha123");
         when(passwordHasher.matches(senhaParaValidar, user.getSenhaHasheada())).thenReturn(true);
 
@@ -134,7 +151,7 @@ class UserTest {
     void deveRetornarFalseParaSenhaInvalida() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         SenhaPlana senhaIncorreta = new SenhaPlana("senhaerrada");
         when(passwordHasher.matches(senhaIncorreta, user.getSenhaHasheada())).thenReturn(false);
 
@@ -151,7 +168,7 @@ class UserTest {
     void deveGarantirImutabilidadeDoId() {
         // Arrange
         UUID idOriginal = UUID.randomUUID();
-        User user = User.reconstituir(idOriginal, emailValido, nomeValido, senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
+        User user = User.reconstituir(idOriginal, emailValido, nomeValido, senhaHasheadaValida, tenantsValidos, Role.ADMINISTRATOR, true);
 
         // Act
         User userAlterado = user.alterarEmail(new Email("outro@example.com"));
@@ -166,7 +183,7 @@ class UserTest {
     void deveGarantirImutabilidadeDaSenhaHasheada() {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
-        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, null, Role.ADMINISTRATOR, true);
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         SenhaHasheada senhaOriginal = user.getSenhaHasheada();
 
         // Act
@@ -178,12 +195,12 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Dois usu?rios com mesmo ID devem ser iguais")
+    @DisplayName("Dois usuarios com mesmo ID devem ser iguais")
     void doisUsuariosComMesmoIdDevemSerIguais() {
         // Arrange
         UUID id = UUID.randomUUID();
-        User user1 = User.reconstituir(id, emailValido, nomeValido, senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
-        User user2 = User.reconstituir(id, new Email("outro@example.com"), new Nome("Outro Nome"), senhaHasheadaValida, null, Role.ADMINISTRATOR, true);
+        User user1 = User.reconstituir(id, emailValido, nomeValido, senhaHasheadaValida, tenantsValidos, Role.ADMINISTRATOR, true);
+        User user2 = User.reconstituir(id, new Email("outro@example.com"), new Nome("Outro Nome"), senhaHasheadaValida, tenantsValidos, Role.PATIENT, true);
 
         // Act & Assert
         assertEquals(user1, user2);
@@ -196,9 +213,9 @@ class UserTest {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
         User user1 = User.criar(emailValido, nomeValido, senhaPlanaValida,
-                passwordHasher, null, Role.ADMINISTRATOR, true);
+                passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         User user2 = User.criar(emailValido, nomeValido, senhaPlanaValida,
-                passwordHasher, null, Role.ADMINISTRATOR, true);
+                passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
 
         // Act & Assert
         assertNotEquals(user1, user2);
@@ -211,7 +228,7 @@ class UserTest {
         // Arrange
         when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
         User userOriginal = User.criar(emailValido, nomeValido, senhaPlanaValida,
-                passwordHasher, null, Role.ADMINISTRATOR, true);
+                passwordHasher, tenantsValidos, Role.ADMINISTRATOR, true);
         Email emailOriginal = userOriginal.getEmail();
         Nome nomeOriginal = userOriginal.getNome();
 
@@ -224,5 +241,37 @@ class UserTest {
         assertNotSame(userOriginal, userComNomeAlterado);
         assertEquals(emailOriginal, userOriginal.getEmail());
         assertEquals(nomeOriginal, userOriginal.getNome());
+    }
+
+    @Test
+    @DisplayName("Deve criar usuario com multiplos tenants")
+    void deveCriarUsuarioComMultiplosTenants() {
+        // Arrange
+        List<UUID> multiplosTenants = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
+
+        // Act
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, multiplosTenants, Role.NUTRITIONIST, true);
+
+        // Assert
+        assertNotNull(user);
+        assertEquals(3, user.getTenants().size());
+        assertEquals(multiplosTenants, user.getTenants());
+        assertEquals(Role.NUTRITIONIST, user.getRole());
+    }
+
+    @Test
+    @DisplayName("Deve criar usuario sem tenants (lista vazia)")
+    void deveCriarUsuarioSemTenants() {
+        // Arrange
+        when(passwordHasher.hash(any(SenhaPlana.class))).thenReturn(senhaHasheadaValida);
+
+        // Act
+        User user = User.criar(emailValido, nomeValido, senhaPlanaValida, passwordHasher, List.of(), Role.PATIENT, true);
+
+        // Assert
+        assertNotNull(user);
+        assertTrue(user.getTenants().isEmpty());
+        assertEquals(Role.PATIENT, user.getRole());
     }
 }

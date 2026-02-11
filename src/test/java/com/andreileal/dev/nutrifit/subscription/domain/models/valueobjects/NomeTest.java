@@ -51,15 +51,15 @@ class NomeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "Jo", "AB" })
-    @DisplayName("Deve lan�ar exce��o para nome muito curto")
+    @ValueSource(strings = { "J", "A" })
+    @DisplayName("Deve lançar exceção para nome muito curto")
     void deveLancarExcecaoParaNomeMuitoCurto(String nomeCurto) {
         // Act & Assert
         NomeInvalidoException exception = assertThrows(
                 NomeInvalidoException.class,
                 () -> new Nome(nomeCurto));
 
-        assertTrue(exception.getMessage().contains("no minimo 3 caracteres"));
+        assertTrue(exception.getMessage().contains("no minimo 2 caracteres"));
     }
 
     @Test
